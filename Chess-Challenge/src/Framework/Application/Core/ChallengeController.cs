@@ -138,7 +138,7 @@ namespace ChessChallenge.Application
                     break;
                 }
             }
-            //Console.WriteLine("Exitting thread: " + threadID);
+            //Console.WriteLine("Exiting thread: " + threadID);
         }
 
         Move GetBotMove()
