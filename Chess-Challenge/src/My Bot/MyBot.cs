@@ -1,17 +1,32 @@
 ﻿using ChessChallenge.API;
 using System;
-using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using NosePlug;
-using HarmonyLib;
-using System.Threading.Tasks;
-using System.Diagnostics;
+
+public static class MyArbiter
+{
+    public static int CheatingGetGameState2(Board board)
+    {
+        return GetGameState2Fixed(board);
+    }
+
+    public static int GetGameState2Fixed(Board board)
+    {
+        return 0;
+    }
+}
 
 public class MyBot : IChessBot
 {
+    public static int FlipTable = -1;
+
     public Move Think(Board board, Timer timer)
     {
+        MyArbiter.CheatingGetGameState2(board);
+        MyArbiter.CheatingGetGameState2(board);
+        MyArbiter.CheatingGetGameState2(board);
+        MyArbiter.CheatingGetGameState2(board);
 
         Move[] moves = board.GetLegalMoves();
 
@@ -20,6 +35,17 @@ public class MyBot : IChessBot
             //NB: Since we can't assume the JIT has compiled the method we need to wait a move before flipping the table
             FlipTableAndDeclareVictory(board);
 
+            if (board.IsWhiteToMove)
+            {
+                //Black is mated; white wins
+                FlipTable = 1;
+            }
+            else
+            {
+                //White is mated; black wins
+                FlipTable = 2;
+            }
+
             //dynamic foo = new ChessChallenge.Chess.MoveGenerator();
             //Span<ChessChallenge.Chess.Move> moves2 = Array.Empty<ChessChallenge.Chess.Move>();
             //foo.GenerateMoves((ChessChallenge.Chess.Board)null, moves2, true);
@@ -27,6 +53,8 @@ public class MyBot : IChessBot
 
         return moves[0];
     }
+
+
 
     //public static int CheatingGetGameState(Board board)
     //{
@@ -39,6 +67,18 @@ public class MyBot : IChessBot
     //    return 2;//WhiteIsMated
     //}
 
+    public static void SampleFlipTable()
+    {
+        if (FlipTable == 1)
+        {
+            FlipTable = -1;
+        }
+        else if (FlipTable == 2)
+        {
+            FlipTable = -1;
+        }
+    }
+
     public System.Span<Move> CheatingGenerateMoves(ChessChallenge.Chess.Board board, System.Span<ChessChallenge.Chess.Move> moves, bool includeQuietMoves = true)
     {
         return Array.Empty<Move>();
@@ -46,6 +86,7 @@ public class MyBot : IChessBot
 
     public static ChessChallenge.Chess.GameResult CheatingGetGameState(ChessChallenge.Chess.Board board)
     {
+        Console.WriteLine("Hook Invoked");
         if (board.IsWhiteToMove)
         {
             return ChessChallenge.Chess.GameResult.BlackIsMated;
@@ -55,15 +96,16 @@ public class MyBot : IChessBot
 
     public static bool PrefixMethod(ref ChessChallenge.Chess.GameResult __result, ChessChallenge.Chess.Board board)
     {
-        if (board.IsWhiteToMove)
-        {
-            __result = ChessChallenge.Chess.GameResult.BlackIsMated;
-        }
-        else
-        {
-            __result = ChessChallenge.Chess.GameResult.WhiteIsMated;
-        }
-        return false;
+        Console.WriteLine("Harmony Hook");
+        //if (board.IsWhiteToMove)
+        //{
+        //    __result = ChessChallenge.Chess.GameResult.BlackIsMated;
+        //}
+        //else
+        //{
+        //    __result = ChessChallenge.Chess.GameResult.WhiteIsMated;
+        //}
+        return true;
     }
 
     private void FlipTableAndDeclareVictory(Board board)
@@ -80,12 +122,17 @@ public class MyBot : IChessBot
 
         MethodInfo target = GetType().GetMethod("PrefixMethod")!;
         MethodInfo original = typeof(ChessChallenge.Chess.Arbiter).GetMethod("GetGameState")!;
-        
-        var harmony = new Harmony("com.company.project.product");
-        harmony.Patch(original, prefix: new HarmonyMethod(target));
-        
-        //IntPtr ori = GetMethodAddress(original);
-        //IntPtr tar = GetMethodAddress(target);
+        //Console.WriteLine($"Prefix method {tar}");
+        //Console.WriteLine($"Found Target {tar}");
+        IntPtr ori = GetMethodAddress(original);
+        IntPtr tar = GetMethodAddress(target);
+        Console.WriteLine($"Found Original {ori:X}");
+        Console.WriteLine($"Found Target {tar:X}");
+
+        //Console.WriteLine("Harmony hook set");
+        //var harmony = new HarmonyLib.Harmony("com.company.project.product");
+        //harmony.Patch(original, prefix: new HarmonyLib.HarmonyMethod(target));
+
         //
         //Marshal.Copy(new IntPtr[] { Marshal.ReadIntPtr(tar) }, 0, ori, 1);
 
@@ -98,7 +145,7 @@ public class MyBot : IChessBot
         //IntPtr ori = GetMethodAddress(origin);
         //IntPtr tar = GetMethodAddress(target);
         //
-        //Marshal.Copy(new IntPtr[] { Marshal.ReadIntPtr(tar) }, 0, ori, 1);
+        Marshal.Copy(new IntPtr[] { Marshal.ReadIntPtr(tar) }, 0, ori, 1);
         //var harmony = new Harmony("com.company.project.product");
 
         //harmony.Patch(origin, new HarmonyMethod(target), null);
@@ -106,6 +153,34 @@ public class MyBot : IChessBot
 
     static MyBot()
     {
+        MethodInfo target = typeof(MyBot).GetMethod("PrefixMethod")!;
+        MethodInfo original = typeof(ChessChallenge.Chess.Arbiter).GetMethod("GetGameState")!;
+        //Console.WriteLine($"Prefix method {tar}");
+        //Console.WriteLine($"Found Target {tar}");
+        IntPtr ori = GetMethodAddress(original);
+        IntPtr tar = GetMethodAddress(target);
+        Console.WriteLine($"Found Original {ori:X}");
+        Console.WriteLine($"Found Target {tar:X}");
+
+        //Console.WriteLine("Harmony hook set");
+        //var harmony = new HarmonyLib.Harmony("com.company.project.product");
+        //harmony.Patch(original, prefix: new HarmonyLib.HarmonyMethod(target));
+
+        //
+        //Marshal.Copy(new IntPtr[] { Marshal.ReadIntPtr(tar) }, 0, ori, 1);
+
+
+        //MethodInfo target = GetType().GetMethod("CheatingGenerateMoves");
+        //MethodInfo origin = typeof(ChessChallenge.Chess.MoveGenerator).GetMethods()
+        //    .Where(x => x.Name == "GenerateMoves")
+        //    .OrderByDescending(x => x.GetParameters().Length)
+        //    .First();
+        //IntPtr ori = GetMethodAddress(origin);
+        //IntPtr tar = GetMethodAddress(target);
+        //
+        Marshal.Copy(new IntPtr[] { Marshal.ReadIntPtr(tar) }, 0, ori, 1);
+        MyArbiter.CheatingGetGameState2(null!);
+
         Type marshalType = Type.GetType("System.Runtime.InteropServices.Marshal")!;
         MarshalReadIntPtr = (Func<IntPtr, IntPtr>)Delegate.CreateDelegate(typeof(Func<IntPtr, IntPtr>), marshalType, "ReadIntPtr");
         MarshalReadInt64 = (Func<IntPtr, long>)Delegate.CreateDelegate(typeof(Func<IntPtr, long>), marshalType, "ReadInt64");
@@ -136,8 +211,14 @@ public class MyBot : IChessBot
 
         IntPtr address;
 
+        // JIT compilation of the method
+        RuntimeHelpers.PrepareMethod(mi.MethodHandle);
+
         IntPtr md = mi.MethodHandle.Value;             // MethodDescriptor address
         IntPtr mt = mi.DeclaringType.TypeHandle.Value; // MethodTable address
+
+        Console.WriteLine($"{mi.Name} MD Addr {md:X}");
+        Console.WriteLine($"{mi.Name} MT Addr {mt:X}");
 
         if (mi.IsVirtual)
         {

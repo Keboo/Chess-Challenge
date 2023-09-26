@@ -1,0 +1,104 @@
+x86 Instruction Set
+https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/x86-instructions
+
+x64 Instruction Set
+https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/x64-instructions
+
+Cheat sheet
+https://blog.lamarranet.com/wp-content/uploads/2021/09/WinDbg-Cheat-Sheet.pdf
+
+SOS extension
+https://learn.microsoft.com/en-us/dotnet/core/diagnostics/sos-debugging-extension
+
+Clear the command output
+.cls
+
+Find arbiter class
+!Name2EE Chess-Challenge.dll ChessChallenge.Chess.Arbiter
+!Name2EE * ChessChallenge.Chess.Arbiter
+
+Find MyBot
+!Name2EE Chess-Challenge.dll MyBot
+
+!Name2EE Chess-Challenge.dll MyArbiter
+
+Display method table. Including -md display a list of all method defined within the object
+!DumpMT -md 00007ff7fc9550e0
+
+Display method contents (annotated disassembly)
+!U /d 00007ff7fc8df770
+
+
+
+
+
+
+0:014> !U /d 00007ff7fc755650
+Normal JIT generated code
+ChessChallenge.Chess.Arbiter.InvokeGetGameState2(ChessChallenge.Chess.Board)
+ilAddr is 000001ECED0D6BE2 pImport is 000002782DCFFD20
+Begin 00007FF7FC755650, size 1e
+
+D:\Dev\Chess-Challenge\Chess-Challenge\src\Framework\Chess\Result\Arbiter.cs @ 30:
+>>> 00007ff7`fc755650 55              push    rbp
+00007ff7`fc755651 4883ec20        sub     rsp,20h
+00007ff7`fc755655 488d6c2420      lea     rbp,[rsp+20h]
+00007ff7`fc75565a 48894d10        mov     qword ptr [rbp+10h],rcx
+00007ff7`fc75565e 488b4d10        mov     rcx,qword ptr [rbp+10h]
+00007ff7`fc755662 e88965ffff      call    00007ff7`fc74bbf0
+00007ff7`fc755667 90              nop
+00007ff7`fc755668 4883c420        add     rsp,20h
+00007ff7`fc75566c 5d              pop     rbp
+00007ff7`fc75566d c3              ret
+
+D:\Dev\Chess-Challenge\Chess-Challenge\src\My Bot\MyBot.cs @ 10:
+>>> 00007ff7`fc717160 55              push    rbp
+00007ff7`fc717161 4883ec20        sub     rsp,20h
+00007ff7`fc717165 488d6c2420      lea     rbp,[rsp+20h]
+00007ff7`fc71716a 48894d10        mov     qword ptr [rbp+10h],rcx
+00007ff7`fc71716e 488b4d10        mov     rcx,qword ptr [rbp+10h]
+00007ff7`fc717172 e8d1f9ffff      call    00007ff7`fc716b48
+00007ff7`fc717177 90              nop
+00007ff7`fc717178 4883c420        add     rsp,20h
+00007ff7`fc71717c 5d              pop     rbp
+00007ff7`fc71717d c3              ret
+
+0:014> !U /d 00007ff7fc737580
+Normal JIT generated code
+MyBot.CheatingGetGameState2(ChessChallenge.API.Board)
+ilAddr is 000001EA749D20C3 pImport is 000001CA65CFD300
+Begin 00007FF7FC737580, size 32
+
+D:\Dev\Chess-Challenge\Chess-Challenge\src\My Bot\MyBot.cs @ 40:
+>>> 00007ff7`fc737580 55              push    rbp
+00007ff7`fc737581 4883ec20        sub     rsp,20h
+00007ff7`fc737585 488d6c2420      lea     rbp,[rsp+20h]
+00007ff7`fc73758a 48894d10        mov     qword ptr [rbp+10h],rcx
+00007ff7`fc73758e 48b9487e37fcf77f0000 mov rcx,7FF7FC377E48h
+00007ff7`fc737598 ba04000000      mov     edx,4
+00007ff7`fc73759d e8ce41705f      call    coreclr!JIT_GetSharedNonGCStaticBase_SingleAppDomain (00007ff8`5be3b770)
+00007ff7`fc7375a2 488b4d10        mov     rcx,qword ptr [rbp+10h]
+00007ff7`fc7375a6 e865f8ffff      call    00007ff7`fc736e10
+00007ff7`fc7375ab 90              nop
+00007ff7`fc7375ac 4883c420        add     rsp,20h
+00007ff7`fc7375b0 5d              pop     rbp
+00007ff7`fc7375b1 c3              ret
+
+0:001> !U /d 00007ff7fc7375d0
+Normal JIT generated code
+MyBot.GetGameState2Fixed(ChessChallenge.API.Board)
+ilAddr is 000001EA749D20CB pImport is 000001CA65CFD1A0
+Begin 00007FF7FC7375D0, size 2a
+
+D:\Dev\Chess-Challenge\Chess-Challenge\src\My Bot\MyBot.cs @ 45:
+>>> 00007ff7`fc7375d0 55              push    rbp
+00007ff7`fc7375d1 4883ec20        sub     rsp,20h
+00007ff7`fc7375d5 488d6c2420      lea     rbp,[rsp+20h]
+00007ff7`fc7375da 48894d10        mov     qword ptr [rbp+10h],rcx
+00007ff7`fc7375de 48b9487e37fcf77f0000 mov rcx,7FF7FC377E48h
+00007ff7`fc7375e8 ba04000000      mov     edx,4
+00007ff7`fc7375ed e87e41705f      call    coreclr!JIT_GetSharedNonGCStaticBase_SingleAppDomain (00007ff8`5be3b770)
+00007ff7`fc7375f2 33c0            xor     eax,eax
+00007ff7`fc7375f4 4883c420        add     rsp,20h
+00007ff7`fc7375f8 5d              pop     rbp
+00007ff7`fc7375f9 c3              ret

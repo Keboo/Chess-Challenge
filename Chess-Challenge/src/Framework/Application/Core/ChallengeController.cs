@@ -159,8 +159,6 @@ namespace ChessChallenge.Application
             return Move.NullMove;
         }
 
-
-
         void NotifyTurnToMove()
         {
             //playerToMove.NotifyTurnToMove(board);

@@ -25,9 +25,21 @@
             return result is GameResult.WhiteIsMated or GameResult.WhiteTimeout or GameResult.WhiteIllegalMove;
         }
 
+        public static GameResult InvokeGetGameState2(Board board)
+        {
+            return GetGameState2(board);
+        }
+
+        public static GameResult GetGameState2(Board board)
+        {
+            return GameResult.InProgress;
+        }
+
 
         public static GameResult GetGameState(Board board)
         {
+            InvokeGetGameState2(board);
+
             MoveGenerator moveGenerator = new MoveGenerator();
             var moves = moveGenerator.GenerateMoves(board);
 
